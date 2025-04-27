@@ -6,12 +6,16 @@ module.exports = (sequelize, DataTypes) => {
   }
   memberTeamModel.init(
     {
+      member_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+      },
       team_id: {
         type: DataTypes.STRING,
-        primaryKey: true,
         allowNull: false,
       },
-      member_id: {
+      user_id: {
         type: DataTypes.BIGINT,
         allowNull: false,
       },

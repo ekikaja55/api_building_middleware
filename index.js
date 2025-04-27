@@ -4,8 +4,9 @@ const app = express();
 const port = 3000;
 const cookieParser = require("cookie-parser");
 const Joi = require("joi");
-const { usersModel } = require("./src/models");
+const { usersModel, teamModel } = require("./src/models");
 const jwt = require("jsonwebtoken");
+const verifyJWT = require("./src/middleware/verifyJWT");
 require("dotenv").config();
 
 app.use(express.json());
@@ -71,7 +72,7 @@ app.post("/api/register", async (req, res) => {
 
     return res.status(200).json(addData);
   } catch (error) {
-    return res.status(404).json(error);
+    return res.status(404).json(error.message);
   }
 });
 
@@ -80,10 +81,11 @@ app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   const user = await usersModel.findOne({
     where: { username: username },
+    attributes: ["user_id", "username", "password", "age", "gender"],
   });
 
   if (!user) {
-    return res.status(404).json({ messages: "gagal login" });
+    return res.status(404).json({ messages: "username atau password salah" });
   }
   const cekValidation = await bcryptjs.compare(password, user.password);
   if (!cekValidation) {
@@ -106,9 +108,35 @@ app.post("/api/login", async (req, res) => {
     maxAge: 60 * 1000,
   });
 
-  return res
-    .status(200)
-    .json({ message: "sukses login", token: accessToken, cookies: req.cook });
+  return res.status(201).json({
+    message: "sukses login",
+    token: accessToken,
+  });
+});
+
+//tugas nomor 1
+app.post("/api/teams", [verifyJWT], async (req, res) => {
+  const schema = Joi.object({
+    team_name: Joi.string().required().min(3).messages({
+      "string.empty": "Input cannot be empty",
+      "string.min": " Your team name must contain at least 3 characters ",
+    }),
+  });
+  try {
+    let inputan = await schema.validateAsync(req.body, {
+      abortEarly: false,
+    });
+    const addData = await teamModel.create({
+      team_id: `T${((await teamModel.count()) + 1)
+        .toString()
+        .padStart(3, "0")}`,
+      team_name: inputan.team_name,
+      team_captain: req.yanglogin.user.username,
+    });
+    return res.status(201).json(addData);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
