@@ -8,6 +8,9 @@ module.exports = (sequelize, DataTypes) => {
         targetKey: "user_id",
         through: models.memberTeamModel,
       });
+      teamModel.belongsTo(models.usersModel, {
+        foreignKey: "team_captain",
+      });
     }
   }
   teamModel.init(

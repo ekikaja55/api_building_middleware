@@ -82,19 +82,32 @@ app.post("/api/register", async (req, res) => {
 //login
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = await usersModel.findOne({
+  const data = await usersModel.findOne({
     where: { username: username },
     attributes: ["user_id", "username", "password", "age", "gender"],
+    include: {
+      model: teamModel,
+      attributes: ["team_id", "team_name", "team_captain"],
+    },
   });
-
-  if (!user) {
+  if (!data) {
     return res.status(404).json({ messages: "username atau password salah" });
   }
-  const cekValidation = await bcryptjs.compare(password, user.password);
+  const cekValidation = await bcryptjs.compare(password, data.password);
   if (!cekValidation) {
     return res.status(404).json({ messages: "gagal login" });
   }
-  user.password = undefined;
+
+  const user = {
+    user_id: data.user_id,
+    username: data.username,
+    age: data.age,
+    gender: data.gender,
+    captain_team: data.TeamModel[0]
+      ? data.TeamModel[0].team_name
+      : "belum mendaftar jadi captain",
+  };
+
   const accessToken = jwt.sign({ user }, process.env.SECRET_ACCESS_TOKEN, {
     expiresIn: "30s",
   });
@@ -102,7 +115,7 @@ app.post("/api/login", async (req, res) => {
     expiresIn: "1d",
   });
 
-  await user.update({
+  await data.update({
     refresh_token: refreshToken,
   });
 
@@ -147,11 +160,10 @@ app.post("/api/teams", [verifyJWT], async (req, res) => {
 });
 
 //tugas nomor 2
-app.put("/api/teams/:team_id", [verifyJWT, cekRole],async (req, res) => {
-
+app.put("/api/teams/:team_id", [verifyJWT, cekRole], async (req, res) => {
   return res.status(200).json({
-    username:req.yanglogin.user.username,
-  })
+    username: req.yanglogin.user.username,
+  });
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
