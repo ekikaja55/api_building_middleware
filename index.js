@@ -7,14 +7,17 @@ const Joi = require("joi");
 const { usersModel, teamModel } = require("./src/models");
 const jwt = require("jsonwebtoken");
 const verifyJWT = require("./src/middleware/verifyJWT");
+const cekRole = require("./src/middleware/cekRole");
+
 require("dotenv").config();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cookieParser());
 
-app.get("/", (req, res) => res.send("Hello World!"));
+app.get("/", (req, res) => res.send("Test"));
+
+//==================================================================================================//
 
 //register
 app.post("/api/register", async (req, res) => {
@@ -133,10 +136,22 @@ app.post("/api/teams", [verifyJWT], async (req, res) => {
       team_name: inputan.team_name,
       team_captain: req.yanglogin.user.username,
     });
-    return res.status(201).json(addData);
+    return res.status(201).json({
+      team_id: addData.team_id,
+      team_name: addData.team_name,
+      team_captain: addData.team_captain,
+    });
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
+});
+
+//tugas nomor 2
+app.put("/api/teams/:team_id", [verifyJWT, cekRole],async (req, res) => {
+
+  return res.status(200).json({
+    username:req.yanglogin.user.username,
+  })
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
