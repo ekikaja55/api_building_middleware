@@ -105,7 +105,7 @@ app.post("/api/login", async (req, res) => {
     gender: data.gender,
     captain_team: data.TeamModel[0]
       ? data.TeamModel[0].team_name
-      : "belum mendaftar jadi captain",
+      : null,
   };
 
   const accessToken = jwt.sign({ user }, process.env.SECRET_ACCESS_TOKEN, {
@@ -161,6 +161,7 @@ app.post("/api/teams", [verifyJWT], async (req, res) => {
 
 //tugas nomor 2
 app.put("/api/teams/:team_id", [verifyJWT, cekRole], async (req, res) => {
+  
   return res.status(200).json({
     username: req.yanglogin.user.username,
   });

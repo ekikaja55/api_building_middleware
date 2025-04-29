@@ -12,7 +12,6 @@ const verifyJWT = (req, res, next) => {
       return res.status(403).json({ message: "Token Tidak Valid" });
     }
     req.yanglogin = decoded;
-    console.log(req.yanglogin);
     next();
   });
 };
