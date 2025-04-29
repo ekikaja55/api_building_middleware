@@ -10,12 +10,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
+        autoIncrement:true,
       },
       team_id: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      user_id: {
+      users_id: {
         type: DataTypes.BIGINT,
         allowNull: false,
       },

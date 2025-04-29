@@ -4,7 +4,7 @@ const app = express();
 const port = 3000;
 const cookieParser = require("cookie-parser");
 const Joi = require("joi");
-const { usersModel, teamModel } = require("./src/models");
+const { usersModel, teamModel, memberTeamModel } = require("./src/models");
 const jwt = require("jsonwebtoken");
 const verifyJWT = require("./src/middleware/verifyJWT");
 const cekRole = require("./src/middleware/cekRole");
@@ -73,7 +73,12 @@ app.post("/api/register", async (req, res) => {
       api_key: apiKey,
     });
 
-    return res.status(200).json(addData);
+    return res.status(200).json({
+      username : addData.username,
+      password : addData.password,
+      age:addData.age,
+      api_key:addData.api_key,
+    });
   } catch (error) {
     return res.status(404).json(error.message);
   }
@@ -161,9 +166,45 @@ app.post("/api/teams", [verifyJWT], async (req, res) => {
 
 //tugas nomor 2
 app.put("/api/teams/:team_id", [verifyJWT, cekRole], async (req, res) => {
+  const {new_members} = req.body;
   
-  return res.status(200).json({
-    username: req.yanglogin.user.username,
+  const validateMember = await usersModel.findOne({
+    where:{
+      user_id:new_members
+    },
+    attributes:[
+      "user_id",
+      "username",
+    ]
+  })   
+  if(!validateMember){
+    return res.status(404).json({message:`Member dengan ID ${new_members} tidak ditemukan`})
+  }
+  
+
+  const cekMember = await memberTeamModel.findOne({
+    where:{
+      users_id:validateMember.user_id,
+      team_id:req.yanglogin.user.team_id,
+    },
+  
+  })
+  
+  if(cekMember){
+  return res.status(404).json({message:`ID sudah terdaftar di team ini `})
+  }
+  await memberTeamModel.create({
+    team_id: req.yanglogin.user.team_id,
+    users_id: validateMember.user_id,
+  })
+  return res.status(200).json({ 
+    message:`The following user(s) has been added to the team ${req.yanglogin.user.captain_team}`,
+    new_team_members:[
+      {
+        user_id:cekMember.user_id.toString(),
+        display_name:cekMember.username,
+      }
+    ]
   });
 });
 

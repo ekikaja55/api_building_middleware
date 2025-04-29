@@ -14,18 +14,19 @@ const { teamModel } = require("../models");
       "team_captain"
     ]
   });
-  console.log({
-    cekvalidasi:  [cekValidasi.team_name,cekValidasi.team_captain],
-    datayanglogin: req.yanglogin.user,
-  });
-  if (!cekValidasi || req.yanglogin.user.captain_team === null) {
+
+  if(!cekValidasi){
+    return res.status(404).json({message:"Team Tidak Ditemukan"});
+  }
+  if (req.yanglogin.user.captain_team === null) {
     return res
       .status(404)
-      .json({ message: "Member tidak bisa menambahkan member baru" });
+      .json({ message: "Member tidak bisa menambahkan member baru, role harus captain" });
   }
   if(cekValidasi.team_captain !== req.yanglogin.user.user_id){
     return res.status(404).json({message:"Hanya captain dari team ini yang bisa menambakan member"})
   }
+  req.yanglogin.user.team_id = team_id;
   next();
 };
 
