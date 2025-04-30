@@ -2,7 +2,11 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class memberTeamModel extends Model {
-    static associate(models) {}
+    static associate(models) {
+      memberTeamModel.belongsTo(models.usersModel,{
+        foreignKey:"id_user",
+      })
+    }
   }
   memberTeamModel.init(
     {
@@ -16,9 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      users_id: {
+      id_user: {
         type: DataTypes.BIGINT,
-        allowNull: false,
+        allowNull:false,
+
       },
     },
     {

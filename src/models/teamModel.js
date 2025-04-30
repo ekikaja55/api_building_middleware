@@ -3,11 +3,6 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class teamModel extends Model {
     static associate(models) {
-      teamModel.belongsToMany(models.usersModel, {
-        foreignKey: "team_id",
-        targetKey: "user_id",
-        through: models.memberTeamModel,
-      });
       teamModel.belongsTo(models.usersModel, {
         foreignKey: "team_captain",
       });
